@@ -90,7 +90,8 @@ const I18N = {
       not_found: "Não encontrado. Usa REGISTAR AGORA.",
       not_registered: "Não registado. Usa REGISTAR AGORA.",
       not_ready: "Ainda não está pronto."
-    }
+    },
+    overlayOk: "OK"
   },
   en: {
     brand: "CLANDESTINE",
@@ -147,7 +148,8 @@ const I18N = {
       not_found: "Not found. Use REGISTER NOW.",
       not_registered: "Not registered. Use REGISTER NOW.",
       not_ready: "Not ready yet."
-    }
+    },
+    overlayOk: "OK"
   },
   fr: {
     brand: "CLANDESTIN",
@@ -204,7 +206,8 @@ const I18N = {
       not_found: "Introuvable. Utilise S’INSCRIRE.",
       not_registered: "Non inscrit.",
       not_ready: "Pas encore prêt."
-    }
+    },
+    overlayOk: "OK"
   },
   de: {
     brand: "UNTERGRUND",
@@ -261,7 +264,8 @@ const I18N = {
       not_found: "Nicht gefunden.",
       not_registered: "Nicht registriert.",
       not_ready: "Noch nicht bereit."
-    }
+    },
+    overlayOk: "OK"
   }
 };
 
@@ -281,6 +285,26 @@ function T(){ return I18N[state.lang]; }
 
 function setView(v){ state.view = v; render(); }
 function setLang(l){ state.lang = l; render(); refreshStats(); }
+
+// ---------------- Overlay (WIN) ----------------
+function showWinOverlay(title, subtitle){
+  const o = document.querySelector("#winOverlay");
+  const big = document.querySelector("#winBig");
+  const sub = document.querySelector("#winSub");
+  const ok = document.querySelector("#winCloseBtn");
+  if (!o || !big || !sub) return;
+
+  big.textContent = title || "🎉";
+  sub.textContent = subtitle || "";
+  if (ok) ok.textContent = T().overlayOk || "OK";
+  o.classList.add("show");
+}
+
+function hideWinOverlay(){
+  const o = document.querySelector("#winOverlay");
+  if (!o) return;
+  o.classList.remove("show");
+}
 
 // ---------------- Battery ----------------
 function batteryText(r){
@@ -377,6 +401,17 @@ function render(){
       <span class="muted">⟡</span>
       <span>Some return. Others learn.</span>
     </footer>
+
+    <!-- WIN OVERLAY -->
+    <div class="winOverlay" id="winOverlay">
+      <div class="winCard">
+        <div class="winScooter" id="winScooter">🛴</div>
+        <div class="winBig" id="winBig">—</div>
+        <div class="winSub" id="winSub">—</div>
+        <button class="enter winClose" id="winCloseBtn">OK</button>
+      </div>
+    </div>
+
   </div>`;
 
   app.querySelectorAll("button[data-lang]").forEach(b=>{
@@ -386,7 +421,6 @@ function render(){
   bind();
   refreshStats();
 
-  // se estiver na view play, desenhar grelha logo
   if (state.view === "play") buildGrid();
 }
 
@@ -494,7 +528,6 @@ function sideHtml(){
       <div class="result" id="sideOut"></div>`;
   }
 
-  // PLAY: grelha e mensagem no lado direito
   return `
     <div class="slot">
       <div class="slotTitle">${t.gridTitle}</div>
@@ -547,6 +580,17 @@ function bind(){
 
   const startGame = document.querySelector("#startGame");
   if (startGame) startGame.addEventListener("click", startPlay);
+
+  const winCloseBtn = document.querySelector("#winCloseBtn");
+  if (winCloseBtn) winCloseBtn.addEventListener("click", ()=>{
+    audioOn(); SFX.click();
+    hideWinOverlay();
+  });
+
+  const winOverlay = document.querySelector("#winOverlay");
+  if (winOverlay) winOverlay.addEventListener("click", (e)=>{
+    if (e.target && e.target.id === "winOverlay") hideWinOverlay();
+  });
 }
 
 // ---------------- Actions ----------------
@@ -710,7 +754,7 @@ function confettiBoom(){
   const box = document.querySelector("#confetti");
   if (!box) return;
   box.innerHTML = "";
-  for (let i = 0; i < 140; i++){
+  for (let i = 0; i < 160; i++){
     const c = document.createElement("div");
     c.className = "conf";
     c.style.left = Math.random()*100 + "vw";
@@ -723,6 +767,8 @@ function confettiBoom(){
 async function startPlay(){
   if (PLAYING) return;
   PLAYING = true;
+
+  hideWinOverlay();
 
   const t = T();
   audioOn(); SFX.click(); SFX.hum();
@@ -759,7 +805,6 @@ async function startPlay(){
     return;
   }
 
-  // Resultado real do Supabase: 1 vencedor único
   const { data, error } = await supabase.rpc("get_play_result", {
     p_telegram: state.telegram,
     p_password: state.password
@@ -781,13 +826,11 @@ async function startPlay(){
 
   const win = !!data.win;
 
-  // garantir grelha no lado direito
   buildGrid();
 
   const cells = 25;
   const target = win ? 12 : Math.floor(Math.random()*cells);
 
-  // 15 segundos
   const totalMs = 15000;
   const stepMs = 95;
 
@@ -801,12 +844,9 @@ async function startPlay(){
     setHot(idx);
     SFX.tick(idx);
 
-    // vai e vem
     idx += dir;
     if (idx >= cells-1){ dir = -1; idx = cells-1; }
     if (idx <= 0){ dir = 1; idx = 0; }
-
-    // hesitações
     if (Math.random() < 0.07) dir *= -1;
 
     if (elapsed >= totalMs){
@@ -818,6 +858,8 @@ async function startPlay(){
       if (win){
         SFX.ok();
         confettiBoom();
+        showWinOverlay(t.winTitle, t.winMsg);
+
         if (msg){
           msg.className = "result ok glow";
           msg.textContent = `${t.winTitle}\n${t.winMsg}`;
