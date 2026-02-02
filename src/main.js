@@ -5,10 +5,10 @@ const SUPABASE_URL = "https://zvygqjwqeougvqvdsloq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_E78syLF-N2LWCvaz8shXRg_wr8vWFyi";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ✅ Se não quiseres mostrar números no cofre, mete false
+// Se quiseres mostrar números reais no cofre (ex: #12 #45), mete true
 const SHOW_NUMBERS_IN_VAULT = false;
 
-// -------- Audio (casino suave) --------
+// ---------------- AUDIO (casino elegante) ----------------
 let audioCtx = null;
 function audioOn() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -33,7 +33,7 @@ const SFX = {
   tick(i){ beep(200 + (i%8)*18, 0.02, "square", 0.012); }
 };
 
-// -------- i18n --------
+// ---------------- i18n ----------------
 const I18N = {
   pt: {
     brand: "CLANDESTINO",
@@ -54,6 +54,7 @@ const I18N = {
     logout: "Sair",
     play: "JOGAR",
     playLocked: "JOGAR (bloqueado)",
+    start: "COMEÇAR",
     registerHint: "Só podes registar com um código válido e ainda não usado.",
     loginHint: "O sistema reconhece-te pela tua password.",
     okRegistered: "✅ Registo confirmado. Uma entrada foi selada.",
@@ -66,7 +67,6 @@ const I18N = {
       e: "✅ O jogo está pronto."
     },
     playIntro: "15 segundos. Não pestanejes.",
-    start: "COMEÇAR",
     gridTitle: "O TABULEIRO",
     loseTitle: "🫠 NÃO FOI HOJE.",
     loseMsgs: [
@@ -111,6 +111,7 @@ const I18N = {
     logout: "Logout",
     play: "PLAY",
     playLocked: "PLAY (locked)",
+    start: "START",
     registerHint: "Register only works with a valid unused code.",
     loginHint: "The system recognizes your password.",
     okRegistered: "✅ Registered. One entry has been sealed.",
@@ -123,7 +124,6 @@ const I18N = {
       e: "✅ The game is ready."
     },
     playIntro: "15 seconds. Don’t blink.",
-    start: "START",
     gridTitle: "THE GRID",
     loseTitle: "🫠 NOT TODAY.",
     loseMsgs: [
@@ -134,7 +134,7 @@ const I18N = {
       "🕳️ The wheel looked at you… and moved on."
     ],
     winTitle: "🎉 CONGRATULATIONS! 🛴✨",
-    winMsg: "You win the trotinette! We will contact you soon. Thank you 🙏",
+    winMsg: "You win the scooter! We will contact you soon. Thank you 🙏",
     errs: {
       missing_fields: "Missing fields. The system hates emptiness.",
       invalid_code: "Code rejected. Maybe it never existed.",
@@ -168,6 +168,7 @@ const I18N = {
     logout: "Quitter",
     play: "JOUER",
     playLocked: "JOUER (bloqué)",
+    start: "DÉMARRER",
     registerHint: "Inscription seulement avec un code valide non utilisé.",
     loginHint: "Le système reconnaît ton mot de passe.",
     okRegistered: "✅ Inscrit. Une entrée a été scellée.",
@@ -180,7 +181,6 @@ const I18N = {
       e: "✅ Le jeu est prêt."
     },
     playIntro: "15 secondes. Ne cligne pas des yeux.",
-    start: "DÉMARRER",
     gridTitle: "LA GRILLE",
     loseTitle: "🫠 PAS AUJOURD’HUI.",
     loseMsgs: [
@@ -225,6 +225,7 @@ const I18N = {
     logout: "Logout",
     play: "SPIELEN",
     playLocked: "SPIELEN (gesperrt)",
+    start: "START",
     registerHint: "Registrierung nur mit gültigem, unbenutztem Code.",
     loginHint: "Das System erkennt dein Passwort.",
     okRegistered: "✅ Registriert. Ein Eintrag wurde versiegelt.",
@@ -237,7 +238,6 @@ const I18N = {
       e: "✅ Spiel bereit."
     },
     playIntro: "15 Sekunden. Nicht blinzeln.",
-    start: "START",
     gridTitle: "DAS FELD",
     loseTitle: "🫠 NICHT HEUTE.",
     loseMsgs: [
@@ -277,12 +277,12 @@ const state = {
 };
 
 const app = document.querySelector("#app");
-
 function T(){ return I18N[state.lang]; }
 
 function setView(v){ state.view = v; render(); }
 function setLang(l){ state.lang = l; render(); refreshStats(); }
 
+// ---------------- Battery ----------------
 function batteryText(r){
   const b = T().battery;
   if (r >= 1) return b.e;
@@ -328,8 +328,10 @@ function escapeHtml(str){
   }[s]));
 }
 
+// ---------------- UI ----------------
 function render(){
   const t = T();
+
   app.innerHTML = `
   <div class="wrap">
     <div class="veil"></div>
@@ -383,6 +385,9 @@ function render(){
 
   bind();
   refreshStats();
+
+  // se estiver na view play, desenhar grelha logo
+  if (state.view === "play") buildGrid();
 }
 
 function viewHtml(){
@@ -463,8 +468,11 @@ function viewHtml(){
       <div class="stack">
         <div class="miniTitle">${t.play}</div>
         <div class="fineprint">${t.playIntro}</div>
+
         <button class="enter" id="startGame">${t.start}</button>
         <button class="enter ghost" id="backVault">${t.back}</button>
+
+        <div class="result" id="playStatus">…</div>
       </div>`;
   }
 
@@ -473,6 +481,7 @@ function viewHtml(){
 
 function sideHtml(){
   const t = T();
+
   if (state.view !== "play"){
     return `
       <div class="slot">
@@ -485,6 +494,7 @@ function sideHtml(){
       <div class="result" id="sideOut"></div>`;
   }
 
+  // PLAY: grelha e mensagem no lado direito
   return `
     <div class="slot">
       <div class="slotTitle">${t.gridTitle}</div>
@@ -539,6 +549,7 @@ function bind(){
   if (startGame) startGame.addEventListener("click", startPlay);
 }
 
+// ---------------- Actions ----------------
 async function onRegister(ev){
   ev.preventDefault();
   const t = T();
@@ -660,59 +671,95 @@ async function loadMyEntries(){
   if (!error && data?.ok) state.numbers = data.numbers || [];
 }
 
-// -------- GAME --------
+// ---------------- GAME ----------------
+let PLAYING = false;
+
 function buildGrid(){
   const grid = document.querySelector("#grid");
   if (!grid) return;
+
   grid.innerHTML = "";
   for (let i=0;i<25;i++){
     const d = document.createElement("div");
     d.className = "cell";
-    d.textContent = "◻";
+    d.innerHTML = `
+      <div class="lid">⟡</div>
+      <div class="core">◻</div>
+    `;
     grid.appendChild(d);
   }
 }
+
 function setHot(idx){
   const grid = document.querySelector("#grid");
   if (!grid) return;
   [...grid.children].forEach((c,i)=> c.classList.toggle("hot", i===idx));
 }
+
+function openCell(idx, win){
+  const grid = document.querySelector("#grid");
+  if (!grid) return;
+  const cell = grid.children[idx];
+  if (!cell) return;
+  cell.classList.add("opened");
+  const core = cell.querySelector(".core");
+  if (core) core.textContent = win ? "🛴" : "🕳️";
+}
+
 function confettiBoom(){
   const box = document.querySelector("#confetti");
   if (!box) return;
   box.innerHTML = "";
-  for (let i=0;i<120;i++){
+  for (let i = 0; i < 140; i++){
     const c = document.createElement("div");
     c.className = "conf";
     c.style.left = Math.random()*100 + "vw";
-    c.style.animationDelay = (Math.random()*0.4) + "s";
+    c.style.animationDelay = (Math.random()*0.35) + "s";
     c.style.transform = `rotate(${Math.random()*360}deg)`;
     box.appendChild(c);
   }
 }
 
 async function startPlay(){
+  if (PLAYING) return;
+  PLAYING = true;
+
   const t = T();
   audioOn(); SFX.click(); SFX.hum();
 
+  const msg = document.querySelector("#gameMsg");
+  const status = document.querySelector("#playStatus");
+
+  if (msg){
+    msg.className = "result";
+    msg.textContent = "…";
+  }
+  if (status){
+    status.className = "result";
+    status.textContent = "⏳ " + t.playIntro;
+  }
+
   await refreshStats();
 
-  // só joga quando cheio/fechado (sem mostrar número)
   const cap = state.stats.capacity || 100;
   const occ = state.stats.occupied || 0;
   const ready = (state.stats.is_open === false) || (occ >= cap);
 
-  const msg = document.querySelector("#gameMsg");
-  msg.className = "result";
-  msg.textContent = "…";
-
   if (!ready){
     SFX.bad();
-    msg.classList.add("bad");
-    msg.textContent = t.errs.not_ready;
+    if (msg){
+      msg.className = "result bad";
+      msg.textContent = t.errs.not_ready;
+    }
+    if (status){
+      status.className = "result bad";
+      status.textContent = t.errs.not_ready;
+    }
+    PLAYING = false;
     return;
   }
 
+  // Resultado real do Supabase: 1 vencedor único
   const { data, error } = await supabase.rpc("get_play_result", {
     p_telegram: state.telegram,
     p_password: state.password
@@ -720,25 +767,33 @@ async function startPlay(){
 
   if (error || !data?.ok){
     SFX.bad();
-    msg.classList.add("bad");
-    msg.textContent = t.errs[data?.error] || "Error.";
+    if (msg){
+      msg.className = "result bad";
+      msg.textContent = t.errs[data?.error] || "Error.";
+    }
+    if (status){
+      status.className = "result bad";
+      status.textContent = t.errs[data?.error] || "Error.";
+    }
+    PLAYING = false;
     return;
   }
 
   const win = !!data.win;
 
+  // garantir grelha no lado direito
   buildGrid();
 
-  // animação 15s (vai e vem)
-  const totalMs = 15000;
-  const stepMs = 85;
   const cells = 25;
+  const target = win ? 12 : Math.floor(Math.random()*cells);
+
+  // 15 segundos
+  const totalMs = 15000;
+  const stepMs = 95;
 
   let idx = 0;
   let dir = 1;
   let elapsed = 0;
-
-  const target = win ? 12 : Math.floor(Math.random()*cells);
 
   const timer = setInterval(()=>{
     elapsed += stepMs;
@@ -746,98 +801,46 @@ async function startPlay(){
     setHot(idx);
     SFX.tick(idx);
 
+    // vai e vem
     idx += dir;
     if (idx >= cells-1){ dir = -1; idx = cells-1; }
     if (idx <= 0){ dir = 1; idx = 0; }
-    if (Math.random() < 0.06) dir *= -1;
+
+    // hesitações
+    if (Math.random() < 0.07) dir *= -1;
 
     if (elapsed >= totalMs){
       clearInterval(timer);
+
       setHot(target);
+      openCell(target, win);
 
       if (win){
         SFX.ok();
         confettiBoom();
-        msg.className = "result ok glow";
-        msg.textContent = `${t.winTitle}\n${t.winMsg}`;
+        if (msg){
+          msg.className = "result ok glow";
+          msg.textContent = `${t.winTitle}\n${t.winMsg}`;
+        }
+        if (status){
+          status.className = "result ok";
+          status.textContent = "✅";
+        }
       } else {
         SFX.bad();
-        msg.className = "result bad glow";
-        msg.textContent = `${t.loseTitle}\n${pick(t.loseMsgs)}`;
+        if (msg){
+          msg.className = "result bad glow";
+          msg.textContent = `${t.loseTitle}\n${pick(t.loseMsgs)}`;
+        }
+        if (status){
+          status.className = "result bad";
+          status.textContent = "…";
+        }
       }
+
+      PLAYING = false;
     }
   }, stepMs);
 }
 
 render();
-// --- GAME LOGIC ---
-const btnPlay = document.querySelector("#btnPlay");
-const gameScreen = document.querySelector("#gameScreen");
-const cells = document.querySelectorAll(".cell");
-const gameMessage = document.querySelector("#gameMessage");
-
-let activeIndex = 0;
-let gameInterval = null;
-
-function startGame() {
-  document.querySelector("main")?.classList.add("hidden");
-  gameScreen.classList.remove("hidden");
-  gameMessage.textContent = "";
-
-  let elapsed = 0;
-  gameInterval = setInterval(() => {
-    cells.forEach(c => c.classList.remove("active"));
-    cells[activeIndex].classList.add("active");
-    activeIndex = (activeIndex + 1) % cells.length;
-    elapsed += 150;
-
-    if (elapsed >= 15000) {
-      clearInterval(gameInterval);
-      finishGame();
-    }
-  }, 150);
-}
-
-async function finishGame() {
-  // aqui simulamos win/lose (depois ligamos ao Supabase)
-  const win = Math.random() < 0.01; // 1 vencedor simbólico
-
-  if (win) {
-    gameMessage.textContent = "🎉 CONGRATULATIONS 🎉 YOU WIN 🛴";
-    confetti();
-  } else {
-    const msgs = [
-      "😈 Quase… mas o sistema não te escolheu.",
-      "🕳️ Sentiste que ia ser agora, não sentiste?",
-      "🎰 O casino agradece a tua esperança.",
-      "⌛ Continua atento. O erro foi acreditar."
-    ];
-    gameMessage.textContent = msgs[Math.floor(Math.random()*msgs.length)];
-  }
-}
-
-// ligar botão
-if (btnPlay) {
-  btnPlay.addEventListener("click", startGame);
-}
-function confetti() {
-  for (let i = 0; i < 120; i++) {
-    const c = document.createElement("div");
-    c.style.position = "fixed";
-    c.style.left = Math.random() * 100 + "vw";
-    c.style.top = "-10px";
-    c.style.width = "6px";
-    c.style.height = "6px";
-    c.style.background = `hsl(${Math.random()*360},100%,50%)`;
-    c.style.opacity = 0.9;
-    c.style.zIndex = 9999;
-    document.body.appendChild(c);
-
-    const fall = c.animate([
-      { transform: "translateY(0)" },
-      { transform: `translateY(${window.innerHeight}px)` }
-    ], { duration: 2000 + Math.random()*2000 });
-
-    fall.onfinish = () => c.remove();
-  }
-}
