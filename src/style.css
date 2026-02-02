@@ -444,3 +444,17 @@ input:focus{border-color: rgba(255,255,255,.22)}
   z-index: 2;
   margin-top: 10px;
 }
+/* LOSE MODE para o overlay */
+.winOverlay.lose .winCard{
+  border-color: rgba(255,80,90,.20);
+}
+
+.winOverlay.lose .winCard::before{
+  background: radial-gradient(closest-side, rgba(255,60,90,.22), transparent 70%),
+              radial-gradient(closest-side, rgba(120,120,255,.10), transparent 70%);
+}
+
+.winOverlay.lose .winScooter{
+  filter: drop-shadow(0 22px 26px rgba(0,0,0,.75));
+  animation: none;
+}
