@@ -7,6 +7,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHOW_NUMBERS_IN_VAULT = false;
 
+// ✅ AQUI: número de cofres no tabuleiro
+const GRID_CELLS = 100;
+
 // ---------------- AUDIO ----------------
 let audioCtx = null;
 function audioOn() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -619,18 +622,24 @@ function buildGrid(){
   const grid=document.querySelector("#grid");
   if (!grid) return;
   grid.innerHTML="";
-  for (let i=0;i<25;i++){
+
+  // ✅ AQUI: cria 100 células
+  for (let i=0;i<GRID_CELLS;i++){
     const d=document.createElement("div");
     d.className="cell";
+    // lid = parte decorativa (rebites/charneira via CSS)
+    // core = conteúdo do cofre (só aparece ao abrir)
     d.innerHTML=`<div class="lid">⟡</div><div class="core">◻</div>`;
     grid.appendChild(d);
   }
 }
+
 function setHot(idx){
   const grid=document.querySelector("#grid");
   if (!grid) return;
   [...grid.children].forEach((c,i)=> c.classList.toggle("hot", i===idx));
 }
+
 function openCell(idx, win){
   const grid=document.querySelector("#grid");
   if (!grid) return;
@@ -640,6 +649,7 @@ function openCell(idx, win){
   const core=cell.querySelector(".core");
   if (core) core.textContent = win ? "🛴" : "🕳️";
 }
+
 function confettiBoom(){
   const box=document.querySelector("#confetti");
   if (!box) return;
@@ -703,40 +713,61 @@ async function startPlay(){
   const win = !!data.win;
   const usedEntry = Number(data.entry_number || 1);
   state.remaining = Number(data.remaining ?? state.remaining);
-  await refreshStats(); // atualiza botão jogar no cofre depois
+  await refreshStats();
 
   buildGrid();
 
-  const cells=25;
-  // alvo: se perder, mapa determinístico para parecer “coerente” com o bilhete
-  const target = win ? 12 : ((usedEntry - 1) % cells);
+  const cells = GRID_CELLS;
 
-  const totalMs=15000, stepMs=95;
+  // ✅ Alvo final em 100:
+  // - se perder: determinístico com base no bilhete (parece “coerente”)
+  // - se ganhar: determinístico também (para não parecer random fake)
+  const target = win
+    ? ((usedEntry * 37) % cells)
+    : ((usedEntry - 1) % cells);
+
+  // animação 15s
+  const totalMs=15000;
+  const stepMs=70; // mais rápido porque agora são 100
   let idx=0, dir=1, elapsed=0;
 
   const timer=setInterval(()=>{
     elapsed += stepMs;
-    setHot(idx); SFX.tick(idx);
+
+    setHot(idx);
+    SFX.tick(idx);
 
     idx += dir;
+
+    // vai e volta (pêndulo)
     if (idx >= cells-1){ dir=-1; idx=cells-1; }
     if (idx <= 0){ dir=1; idx=0; }
-    if (Math.random() < 0.07) dir *= -1;
+
+    // caos controlado
+    if (Math.random() < 0.05) dir *= -1;
 
     if (elapsed >= totalMs){
       clearInterval(timer);
+
       setHot(target);
       openCell(target, win);
 
       if (win){
-        SFX.ok(); confettiBoom();
+        SFX.ok();
+        confettiBoom();
+
         showOverlay({ mode:"win", icon:"🛴", title:t.winTitle, subtitle:t.winMsg });
+
         if (msg){ msg.className="result ok glow"; msg.textContent=`${t.winTitle}\n${t.winMsg}`; }
         if (status){ status.className="result ok"; status.textContent="✅"; }
       } else {
         SFX.bad();
-        const text = `${t.loseTitle}\n${pick(t.loseMsgs)}`;
-        showOverlay({ mode:"lose", icon:"🕳️", title:t.loseTitle, subtitle: pick(t.loseMsgs) });
+
+        const sub = pick(t.loseMsgs);
+        const text = `${t.loseTitle}\n${sub}`;
+
+        showOverlay({ mode:"lose", icon:"🕳️", title:t.loseTitle, subtitle: sub });
+
         if (msg){ msg.className="result bad glow"; msg.textContent=text; }
         if (status){ status.className="result bad"; status.textContent="…"; }
       }
