@@ -199,231 +199,227 @@ input:focus{border-color: rgba(255,255,255,.22)}
    Usa .lid como “porta” (porque já existe no HTML)
    ====================================================== */
 
+/* ======================================================
+   GRID — COFRES (VAULT DOORS) A SÉRIO + PORTA A DESLIZAR
+   ====================================================== */
+
 .gridWrap{min-height:260px}
 .grid{
   position:relative;
   z-index:2;
   display:grid;
   grid-template-columns: repeat(5, 1fr);
-  gap:12px;
+  gap:14px;
 }
 
-/* CAIXA BASE (carcaça do cofre / frame) */
+/* carcaça exterior */
 .cell{
-  height:66px;
-  border-radius:16px;
+  height:68px;
+  border-radius:18px;
   position:relative;
   overflow:hidden;
   display:grid;
   place-items:center;
   opacity:.95;
+  border:1px solid rgba(255,255,255,.14);
   transform: translateZ(0);
-  border: 1px solid rgba(255,255,255,.12);
 
-  /* frame exterior do cofre */
   background:
-    radial-gradient(130% 130% at 30% 25%, rgba(255,255,255,.08), rgba(0,0,0,.62) 70%),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 8px),
-    linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.65));
+    radial-gradient(140% 140% at 30% 25%, rgba(255,255,255,.08), rgba(0,0,0,.70) 70%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 9px),
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.72));
 
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 1px 0 rgba(255,255,255,.22),
     inset 0 -18px 38px rgba(0,0,0,.75),
-    0 18px 44px rgba(0,0,0,.42);
+    0 22px 55px rgba(0,0,0,.45);
 }
 
-/* aro interior (moldura da porta) */
-.cell::before{
-  content:"";
-  position:absolute;
-  inset:7px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.14);
-  background:
-    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.06), rgba(0,0,0,.25) 72%),
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.25));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    inset 0 -2px 0 rgba(0,0,0,.85);
-  pointer-events:none;
+/* INTERIOR (onde fica o prémio) */
+.cell .core{
+  position:relative;
+  z-index:1;
+  display:grid;
+  place-items:center;
+  height:100%;
+  font-size:24px;
+  font-weight:1000;
+  filter: drop-shadow(0 16px 18px rgba(0,0,0,.6));
 }
 
-/* rebites exteriores + risco de luz */
-.cell::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 14px 14px, rgba(255,255,255,.30) 0 2px, transparent 3px),
-    radial-gradient(circle at calc(100% - 14px) 14px, rgba(255,255,255,.30) 0 2px, transparent 3px),
-    radial-gradient(circle at 14px calc(100% - 14px), rgba(255,255,255,.30) 0 2px, transparent 3px),
-    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), rgba(255,255,255,.30) 0 2px, transparent 3px),
-    linear-gradient(120deg, transparent 18%, rgba(255,255,255,.12), transparent 82%);
-  opacity:.30;
-  transform: translateX(-38%);
-  transition: transform .35s ease, opacity .35s ease;
-  pointer-events:none;
-}
-
-/* ===== A PORTA (usa .lid) =====
-   O teu HTML já tem <div class="lid">⟡</div>
-   Vamos ignorar o texto e transformar isto numa porta real
-*/
-.cell .lid{
-  position:absolute;
-  inset:8px;                 /* fica dentro do frame */
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.14);
-  background:
-    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.10), rgba(0,0,0,.58) 70%),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 8px),
-    linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.72));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.14),
-    inset 0 -12px 26px rgba(0,0,0,.70),
-    0 8px 18px rgba(0,0,0,.35);
-  z-index:3;
-
-  /* esconder o "⟡" que está no HTML */
+/* escondemos o quadrado/emoji até abrir (para só veres o COFRE) */
+.cell:not(.opened) .core{
   color: transparent;
-  font-size: 0;
-
-  /* animação de porta */
-  transform: translateX(0);
-  transition: transform 520ms cubic-bezier(.2,.9,.2,1), filter 520ms ease, opacity 520ms ease;
 }
 
-/* dobradiças (lado esquerdo) na porta */
-.cell .lid::before{
+/* “luz interior” muito leve */
+.cell .core::before{
   content:"";
   position:absolute;
-  left:-6px;
-  top:10px;
-  width:10px;
-  height:calc(100% - 20px);
-  border-radius:10px;
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.65));
-  border:1px solid rgba(255,255,255,.12);
+  inset:10px;
+  border-radius:14px;
+  background: radial-gradient(closest-side, rgba(255,255,255,.06), transparent 70%);
   opacity:.55;
 }
 
-/* RODA DO COFRE (no centro da porta) */
-.cell .lid::after{
+/* A PORTA DO COFRE (painel) */
+.cell::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.16);
+
+  /* metal pesado, com brilho e textura */
+  background:
+    radial-gradient(130% 130% at 30% 25%, rgba(255,255,255,.12), rgba(0,0,0,.62) 70%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 8px),
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.78));
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -14px 26px rgba(0,0,0,.70),
+    0 10px 18px rgba(0,0,0,.35);
+
+  z-index:3;
+
+  transform: translateX(0);
+  transition: transform 560ms cubic-bezier(.2,.95,.2,1);
+}
+
+/* RODA/DIAL GRANDE DO COFRE (bem visível) */
+.cell::after{
   content:"";
   position:absolute;
   left:50%;
   top:50%;
-  width:30px;
-  height:30px;
+  width:40px;
+  height:40px;
   transform: translate(-50%,-50%);
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
+
+  border:1px solid rgba(255,255,255,.18);
   background:
-    radial-gradient(circle at 35% 35%, rgba(255,255,255,.18), rgba(0,0,0,.38) 70%),
+    radial-gradient(circle at 35% 35%, rgba(255,255,255,.22), rgba(0,0,0,.45) 72%),
     conic-gradient(from 0deg,
-      rgba(255,255,255,.12), transparent 18%,
-      rgba(255,255,255,.12) 36%, transparent 54%,
-      rgba(255,255,255,.12) 72%, transparent 90%,
-      rgba(255,255,255,.12) 100%);
+      rgba(255,255,255,.18) 0 8%,
+      transparent 8% 20%,
+      rgba(255,255,255,.16) 20% 28%,
+      transparent 28% 40%,
+      rgba(255,255,255,.16) 40% 48%,
+      transparent 48% 60%,
+      rgba(255,255,255,.16) 60% 68%,
+      transparent 68% 80%,
+      rgba(255,255,255,.16) 80% 88%,
+      transparent 88% 100%);
+
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    inset 0 -8px 14px rgba(0,0,0,.65);
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -10px 16px rgba(0,0,0,.65),
+    0 10px 18px rgba(0,0,0,.45);
+
+  opacity:.85;
+  z-index:4;
+
+  transition: transform 560ms cubic-bezier(.2,.95,.2,1), opacity 300ms ease;
+}
+
+/* BOLTS/REBites nos cantos (bem mais óbvio) */
+.cell .lid{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+
+  /* usamos backgrounds para os rebites */
+  background:
+    radial-gradient(circle at 18px 18px, rgba(255,255,255,.35) 0 2px, rgba(0,0,0,.0) 3px),
+    radial-gradient(circle at calc(100% - 18px) 18px, rgba(255,255,255,.35) 0 2px, rgba(0,0,0,.0) 3px),
+    radial-gradient(circle at 18px calc(100% - 18px), rgba(255,255,255,.35) 0 2px, rgba(0,0,0,.0) 3px),
+    radial-gradient(circle at calc(100% - 18px) calc(100% - 18px), rgba(255,255,255,.35) 0 2px, rgba(0,0,0,.0) 3px),
+
+    /* charneira à esquerda */
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.70));
+
+  /* mascara para a charneira ficar só numa faixa */
+  mask:
+    linear-gradient(#000,#000) left/10px 100% no-repeat,
+    linear-gradient(#000,#000);
+
   opacity:.55;
 }
 
-/* Conteúdo do cofre (emoji aparece quando abre) */
-.cell .core{
-  position:relative;
-  z-index:2; /* por baixo da porta */
-  display:grid;
-  place-items:center;
-  height:100%;
-  font-size:22px;
-  font-weight:900;
-  opacity:.92;
-  filter: drop-shadow(0 16px 16px rgba(0,0,0,.55));
-}
-
-/* mini-cofres escondidos no “interior” (quase invisíveis) */
-.cell .core::before{
+/* MINI-COFRES DENTRO (quase invisíveis, detalhe secreto) */
+.cell:not(.opened) .core::after{
   content:"";
   position:absolute;
-  width:20px; height:16px;
-  left:50%; top:50%;
-  transform: translate(-50%,-42%);
-  border-radius:5px;
+  left:50%;
+  top:50%;
+  width:24px;
+  height:18px;
+  transform: translate(-50%,-36%);
+  border-radius:6px;
   border:1px solid rgba(255,255,255,.10);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.24));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -5px 10px rgba(0,0,0,.60);
-  opacity:.06;           /* MAL SE VÊ */
-  filter: blur(.2px);
-}
-.cell .core::after{
-  content:"";
-  position:absolute;
-  width:7px; height:7px;
-  left:50%; top:50%;
-  transform: translate(-50%,-18%);
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.25);
-  opacity:.06;          /* MAL SE VÊ */
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.28));
+  box-shadow: inset 0 -6px 10px rgba(0,0,0,.70);
+  opacity:.08; /* MAL SE VÊ */
 }
 
-/* HOT: brilha e a roda “treme” (clandestino casino vibe) */
+/* HOT (quando está a “piscar”) — fica mais vivo e o dial gira */
 .cell.hot{
   opacity:1;
   transform: scale(1.05);
   border-color: rgba(255,255,255,.18);
+  outline:2px solid rgba(255,255,255,.10);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.22),
-    inset 0 -18px 38px rgba(0,0,0,.75),
-    0 0 44px rgba(255,255,255,.14),
-    0 28px 70px rgba(0,0,0,.52);
-  outline: 2px solid rgba(255,255,255,.10);
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -18px 38px rgba(0,0,0,.78),
+    0 0 44px rgba(255,255,255,.12),
+    0 30px 80px rgba(0,0,0,.55);
 }
-.cell.hot::after{ opacity:.70; transform: translateX(38%); }
-.cell.hot .core::before,
-.cell.hot .core::after{ opacity:.12; } /* ainda discreto, mas aparece um bocadinho */
 
-/* roda a girar quando está hot */
-.cell.hot .lid::after{
+.cell.hot::after{
   animation: dialSpin 0.45s linear infinite;
+  opacity:1;
 }
 @keyframes dialSpin{
   from{ transform: translate(-50%,-50%) rotate(0deg); }
   to{ transform: translate(-50%,-50%) rotate(360deg); }
 }
 
-/* OPEN: PORTA DESLIZA PARA A DIREITA (door open) + luz interior */
+/* OPENED — PORTA DESLIZA PARA A DIREITA (door open real) */
+.cell.opened::before{
+  transform: translateX(118%);
+}
+
+/* o dial acompanha a porta a abrir */
+.cell.opened::after{
+  transform: translate(calc(-50% + 118%), -50%);
+  opacity:.75;
+  animation:none;
+}
+
+/* interior “dourado” quando abre */
 .cell.opened{
   background:
-    radial-gradient(140% 140% at 35% 35%, rgba(255,235,160,.12), rgba(0,0,0,.70) 70%),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 8px),
-    linear-gradient(180deg, rgba(255,220,120,.14), rgba(0,0,0,.75));
+    radial-gradient(160% 160% at 40% 40%, rgba(255,235,160,.14), rgba(0,0,0,.78) 70%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 9px),
+    linear-gradient(180deg, rgba(255,220,120,.14), rgba(0,0,0,.78));
 }
 
-/* a porta anda para o lado e “some” */
-.cell.opened .lid{
-  transform: translateX(120%);
-  filter: blur(.3px);
-  opacity:.92;
-}
-
-/* parar a roda ao abrir */
-.cell.opened .lid::after{
-  animation:none;
-  opacity:.50;
-}
-
-/* o prémio “salta” quando o cofre abre */
+/* quando abre, mostra o emoji e ele “salta” */
 .cell.opened .core{
+  color: inherit;
   animation: prizePop .55s cubic-bezier(.2,1.3,.2,1) forwards;
 }
+
 @keyframes prizePop{
+  0%   { transform: translateY(0) scale(1); opacity:.92; }
+  35%  { transform: translateY(-18px) scale(1.15); opacity:1; }
+  70%  { transform: translateY(-10px) scale(1.08); }
+  100% { transform: translateY(-12px) scale(1.10); }
+}
+{
   0%   { transform: translateY(0) scale(1); opacity:.92; }
   35%  { transform: translateY(-18px) scale(1.15); opacity:1; }
   70%  { transform: translateY(-10px) scale(1.08); }
