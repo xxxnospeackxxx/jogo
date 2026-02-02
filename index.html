@@ -6,7 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>clandestino-casino</title>
   </head>
-  <body>
+  <body><!-- GAME SCREEN -->
+<div id="gameScreen" class="hidden">
+  <h1 class="glow">🎰 O JOGO COMEÇOU</h1>
+
+  <div id="grid" class="grid">
+    <!-- 25 caixas -->
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  </div>
+
+  <div id="gameMessage" class="gameMessage"></div>
+</div>
+
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
