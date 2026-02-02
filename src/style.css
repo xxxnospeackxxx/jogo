@@ -1,0 +1,244 @@
+:root{
+  --bg:#07080b;
+  --fg:#e9e7df;
+  --muted:#a3a0a0;
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.10);
+  --line: rgba(255,255,255,.10);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.06), transparent 60%),
+    radial-gradient(900px 700px at 80% 20%, rgba(255,0,80,.08), transparent 55%),
+    radial-gradient(900px 700px at 50% 90%, rgba(0,200,255,.06), transparent 55%),
+    var(--bg);
+  color:var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  letter-spacing:.2px;
+  overflow-x:hidden;
+}
+
+.wrap{min-height:100%; padding:22px 18px 16px; position:relative}
+.veil{
+  position:absolute; inset:-80px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.03), transparent);
+  filter: blur(1px);
+  opacity:.55;
+  animation: sweep 7.5s linear infinite;
+  pointer-events:none;
+}
+@keyframes sweep{ 0%{transform:translateX(-35%)} 100%{transform:translateX(35%)} }
+
+.top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:14px; max-width:1100px; margin:0 auto 18px;
+}
+.brand{display:flex; align-items:center; gap:12px}
+.sigil{
+  width:44px; height:44px; border-radius:16px;
+  display:grid; place-items:center;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  border:1px solid var(--line);
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  font-size:18px;
+}
+.title{font-weight:900; letter-spacing:1px}
+.subtitle{color:var(--muted); font-size:13px; margin-top:3px}
+.lang{display:flex; gap:8px}
+.chip{
+  border:1px solid var(--line);
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  color:var(--fg);
+  padding:8px 10px;
+  border-radius:14px;
+  cursor:pointer;
+  opacity:.9;
+}
+.chip.active{outline:2px solid rgba(255,255,255,.16); opacity:1}
+
+.main{
+  max-width:1100px; margin:0 auto;
+  display:grid; grid-template-columns: 1.1fr .9fr;
+  gap:14px;
+}
+@media (max-width: 920px){ .main{grid-template-columns:1fr} }
+
+.panel{
+  border:1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+  border-radius:22px;
+  padding:16px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.40);
+  backdrop-filter: blur(10px);
+}
+
+.divider{height:1px; background:var(--line); margin:12px 0 12px}
+
+.form{display:grid; gap:10px}
+label span{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
+input{
+  width:100%;
+  background: rgba(0,0,0,.25);
+  color:var(--fg);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px 12px;
+  outline:none;
+}
+input:focus{border-color: rgba(255,255,255,.22)}
+
+.enter{
+  margin-top:6px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.16);
+  color:var(--fg);
+  cursor:pointer;
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+  box-shadow: 0 14px 40px rgba(0,0,0,.38);
+  font-weight:900;
+  letter-spacing:.8px;
+}
+.enter:disabled{opacity:.55; cursor:not-allowed}
+.enter.ghost{background: rgba(255,255,255,.06)}
+
+.fineprint{color:var(--muted); font-size:12px; line-height:1.35}
+.result{
+  margin-top:12px;
+  font-size:14px;
+  line-height:1.4;
+  padding:12px 12px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background: rgba(0,0,0,.22);
+  min-height:64px;
+  white-space: pre-line;
+}
+.result.ok{border-color: rgba(120,255,170,.18)}
+.result.bad{border-color: rgba(255,80,90,.18)}
+
+.stack{display:grid; gap:10px}
+.miniTitle{font-weight:900; letter-spacing:.8px; margin:4px 0 6px}
+
+.folder{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  padding:12px;
+  background: rgba(0,0,0,.22);
+}
+.folderTop{display:flex; justify-content:space-between; gap:10px; margin-bottom:10px}
+.folderNums{display:flex; flex-wrap:wrap; gap:8px}
+.numChip{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  font-weight:800;
+}
+
+.slotTitle{color:var(--muted); font-size:12px; letter-spacing:1.2px}
+.slotBody{
+  margin-top:10px;
+  border:1px solid var(--line);
+  background: rgba(0,0,0,.25);
+  border-radius:18px;
+  padding:14px;
+  min-height:190px;
+  position:relative;
+  overflow:hidden;
+}
+.pulse{
+  position:absolute; inset:-80px;
+  background: radial-gradient(closest-side, rgba(255,0,90,.18), transparent 70%),
+              radial-gradient(closest-side, rgba(0,210,255,.12), transparent 70%);
+  filter: blur(2px);
+  animation: breathe 2.8s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%{transform:scale(.98); opacity:.75}
+  50%{transform:scale(1.04); opacity:1}
+  100%{transform:scale(.98); opacity:.75}
+}
+.whisper{
+  position:relative;
+  z-index:1;
+  font-size:16px;
+  line-height:1.35;
+  color: rgba(233,231,223,.92);
+}
+
+.batteryBox{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  padding:12px;
+  background: rgba(0,0,0,.22);
+}
+.batteryTop{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px}
+.batteryText{font-weight:900; letter-spacing:.2px}
+.battery{
+  height:16px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  overflow:hidden;
+}
+.batteryFill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  transition: width 500ms ease, background 500ms ease;
+}
+
+.gridWrap{min-height:240px}
+.grid{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap:10px;
+}
+.cell{
+  height:44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  opacity:.8;
+  transition: transform .08s ease, opacity .08s ease;
+}
+.cell.hot{
+  opacity:1;
+  transform: scale(1.06);
+  box-shadow: 0 0 22px rgba(255,255,255,.12);
+}
+
+.glow{ animation: glowPulse 1.2s ease-in-out infinite; }
+@keyframes glowPulse{ 0%{transform:translateY(0)} 50%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
+
+#confetti{ position:fixed; inset:0; pointer-events:none; overflow:hidden; }
+.conf{
+  position:absolute;
+  top:-12px;
+  width:8px;
+  height:14px;
+  background: rgba(255,255,255,.7);
+  border-radius:2px;
+  animation: fall 1.6s ease-in forwards;
+}
+@keyframes fall{
+  0%{transform: translateY(0) rotate(0deg); opacity:1}
+  100%{transform: translateY(105vh) rotate(540deg); opacity:0}
+}
+
+.foot{
+  max-width:1100px; margin:14px auto 0;
+  display:flex; gap:10px; align-items:center;
+  color:var(--muted); font-size:12px;
+}
