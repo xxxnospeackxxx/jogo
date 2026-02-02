@@ -198,6 +198,10 @@ input:focus{border-color: rgba(255,255,255,.22)}
    GRID — COFRE / SAFE BOX STYLE (NEW)
    ====================================== */
 
+/* ======================================================
+   GRID — COFRES (VAULT DOORS) REALISTAS
+   ====================================================== */
+
 .gridWrap{min-height:260px}
 .grid{
   position:relative;
@@ -207,76 +211,64 @@ input:focus{border-color: rgba(255,255,255,.22)}
   gap:12px;
 }
 
-/* Base da caixa (cofre) */
+/* Base do COFRE */
 .cell{
-  height:58px;
+  height:62px;
   border-radius:16px;
   position:relative;
   overflow:hidden;
   display:grid;
   place-items:center;
-  opacity:.92;
+  opacity:.94;
   transform: translateZ(0);
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.12);
 
-  /* metal escovado + sombra */
+  /* metal pesado + textura */
   background:
-    linear-gradient(180deg, rgba(255,255,255,.09), rgba(0,0,0,.35)),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,.00) 6px),
-    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.08), rgba(0,0,0,.42) 70%);
+    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.08), rgba(0,0,0,.55) 70%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 7px),
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.55));
 
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -10px 24px rgba(0,0,0,.55),
-    0 18px 44px rgba(0,0,0,.35);
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -16px 34px rgba(0,0,0,.70),
+    0 18px 44px rgba(0,0,0,.40);
 }
 
-/* aro do cofre */
+/* ARO/PORTA do cofre */
 .cell::before{
   content:"";
   position:absolute;
-  inset:8px;
+  inset:7px;
   border-radius:12px;
-  border: 1px solid rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.06), rgba(0,0,0,.25) 72%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.25));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -1px 0 rgba(0,0,0,.65);
-  opacity:.95;
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -2px 0 rgba(0,0,0,.85);
   pointer-events:none;
 }
 
-/* rebites (cantos) */
+/* Rebites + brilho */
 .cell::after{
   content:"";
   position:absolute;
   inset:0;
   background:
-    radial-gradient(circle at 14px 14px, rgba(255,255,255,.28) 0 2px, transparent 3px),
-    radial-gradient(circle at calc(100% - 14px) 14px, rgba(255,255,255,.28) 0 2px, transparent 3px),
-    radial-gradient(circle at 14px calc(100% - 14px), rgba(255,255,255,.28) 0 2px, transparent 3px),
-    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), rgba(255,255,255,.28) 0 2px, transparent 3px),
-    linear-gradient(120deg, transparent 25%, rgba(255,255,255,.12), transparent 75%);
-  opacity:.38;
-  transform: translateX(-30%);
+    radial-gradient(circle at 14px 14px, rgba(255,255,255,.30) 0 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 14px) 14px, rgba(255,255,255,.30) 0 2px, transparent 3px),
+    radial-gradient(circle at 14px calc(100% - 14px), rgba(255,255,255,.30) 0 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), rgba(255,255,255,.30) 0 2px, transparent 3px),
+    linear-gradient(120deg, transparent 18%, rgba(255,255,255,.12), transparent 82%);
+  opacity:.32;
+  transform: translateX(-36%);
   transition: transform .35s ease, opacity .35s ease;
   pointer-events:none;
 }
 
-/* tampa (símbolo) */
-.cell .lid{
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  font-weight:1000;
-  letter-spacing:2px;
-  opacity:.55;
-  transform: translateY(0);
-  transition: transform 260ms ease, opacity 260ms ease;
-  text-shadow: 0 10px 18px rgba(0,0,0,.6);
-}
-
-/* conteúdo */
+/* A “roda” do cofre (quase invisível até ficar hot) */
 .cell .core{
   position:relative;
   z-index:2;
@@ -286,46 +278,117 @@ input:focus{border-color: rgba(255,255,255,.22)}
   font-size:22px;
   font-weight:900;
   opacity:.95;
-  filter: drop-shadow(0 16px 16px rgba(0,0,0,.45));
+  filter: drop-shadow(0 16px 16px rgba(0,0,0,.55));
 }
 
-/* HOT = cofre ativo */
+/* roda grande */
+.cell .core::before{
+  content:"";
+  position:absolute;
+  width:28px; height:28px;
+  left:50%; top:50%;
+  transform: translate(-50%,-50%);
+  border-radius:999px;
+
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255,255,255,.16), rgba(0,0,0,.35) 65%),
+    conic-gradient(from 0deg,
+      rgba(255,255,255,.10), rgba(0,0,0,.00) 20%,
+      rgba(255,255,255,.10) 40%, rgba(0,0,0,.00) 60%,
+      rgba(255,255,255,.10) 80%, rgba(0,0,0,.00) 100%);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -6px 12px rgba(0,0,0,.65);
+
+  opacity:.10; /* muito discreto */
+}
+
+/* “raios” da roda */
+.cell .core::after{
+  content:"";
+  position:absolute;
+  width:34px; height:34px;
+  left:50%; top:50%;
+  transform: translate(-50%,-50%);
+  border-radius:999px;
+  background:
+    conic-gradient(from 0deg,
+      rgba(255,255,255,.22) 0 6%,
+      transparent 6% 20%,
+      rgba(255,255,255,.18) 20% 26%,
+      transparent 26% 40%,
+      rgba(255,255,255,.18) 40% 46%,
+      transparent 46% 60%,
+      rgba(255,255,255,.18) 60% 66%,
+      transparent 66% 80%,
+      rgba(255,255,255,.18) 80% 86%,
+      transparent 86% 100%);
+  opacity:.06; /* quase invisível */
+}
+
+/* Dobradiças (lado esquerdo) */
+.cell .lid{
+  position:absolute;
+  left:8px;
+  top:50%;
+  transform: translateY(-50%);
+  width:10px;
+  height:38px;
+  border-radius:8px;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.55));
+  border:1px solid rgba(255,255,255,.10);
+  opacity:.35;
+}
+
+/* HOT = cofre “ativo” (roda fica visível e roda ligeiramente) */
 .cell.hot{
   opacity:1;
   transform: scale(1.06);
-  border-color: rgba(255,255,255,.16);
+  border-color: rgba(255,255,255,.18);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.22),
-    inset 0 -12px 28px rgba(0,0,0,.55),
-    0 0 44px rgba(255,255,255,.15),
-    0 28px 70px rgba(0,0,0,.48);
+    inset 0 -16px 34px rgba(0,0,0,.70),
+    0 0 44px rgba(255,255,255,.14),
+    0 28px 70px rgba(0,0,0,.52);
   outline: 2px solid rgba(255,255,255,.10);
 }
 
-.cell.hot::after{
-  opacity:.78;
-  transform: translateX(30%);
+.cell.hot::after{ opacity:.72; transform: translateX(36%); }
+.cell.hot .core::before{ opacity:.22; }
+.cell.hot .core::after{
+  opacity:.14;
+  animation: dialSpin 0.45s linear infinite;
+}
+@keyframes dialSpin{
+  from{ transform: translate(-50%,-50%) rotate(0deg); }
+  to{ transform: translate(-50%,-50%) rotate(360deg); }
 }
 
-/* OPEN = porta a subir */
-.cell.opened .lid{
-  transform: translateY(-120%);
-  opacity:0;
-}
-
-/* quando abre, fica dourado/subtil */
+/* OPEN = porta desbloqueia + “luz” interior */
 .cell.opened{
   background:
-    linear-gradient(180deg, rgba(255,220,120,.14), rgba(0,0,0,.38)),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,.00) 6px),
-    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.08), rgba(0,0,0,.42) 70%);
+    radial-gradient(120% 120% at 30% 25%, rgba(255,240,170,.10), rgba(0,0,0,.60) 70%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.02) 2px, rgba(0,0,0,0) 7px),
+    linear-gradient(180deg, rgba(255,220,120,.12), rgba(0,0,0,.60));
 }
 
-/* o prémio “salta” */
+/* a roda pára e fica “destravada” */
+.cell.opened .core::after{ animation:none; opacity:.10; }
+.cell.opened .core::before{ opacity:.18; }
+
+/* o prémio “salta” (🛴 ou 🕳️) */
 .cell.opened .core{
   animation: prizePop .55s cubic-bezier(.2,1.3,.2,1) forwards;
 }
+
 @keyframes prizePop{
+  0%   { transform: translateY(0) scale(1); opacity:.95; }
+  35%  { transform: translateY(-18px) scale(1.15); opacity:1; }
+  70%  { transform: translateY(-10px) scale(1.08); }
+  100% { transform: translateY(-12px) scale(1.10); }
+}
+{
   0%   { transform: translateY(0) scale(1); opacity:.95; }
   35%  { transform: translateY(-18px) scale(1.15); opacity:1; }
   70%  { transform: translateY(-10px) scale(1.08); }
