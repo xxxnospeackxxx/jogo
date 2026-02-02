@@ -820,3 +820,24 @@ async function finishGame() {
 if (btnPlay) {
   btnPlay.addEventListener("click", startGame);
 }
+function confetti() {
+  for (let i = 0; i < 120; i++) {
+    const c = document.createElement("div");
+    c.style.position = "fixed";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.top = "-10px";
+    c.style.width = "6px";
+    c.style.height = "6px";
+    c.style.background = `hsl(${Math.random()*360},100%,50%)`;
+    c.style.opacity = 0.9;
+    c.style.zIndex = 9999;
+    document.body.appendChild(c);
+
+    const fall = c.animate([
+      { transform: "translateY(0)" },
+      { transform: `translateY(${window.innerHeight}px)` }
+    ], { duration: 2000 + Math.random()*2000 });
+
+    fall.onfinish = () => c.remove();
+  }
+}
