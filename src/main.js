@@ -770,3 +770,53 @@ async function startPlay(){
 }
 
 render();
+// --- GAME LOGIC ---
+const btnPlay = document.querySelector("#btnPlay");
+const gameScreen = document.querySelector("#gameScreen");
+const cells = document.querySelectorAll(".cell");
+const gameMessage = document.querySelector("#gameMessage");
+
+let activeIndex = 0;
+let gameInterval = null;
+
+function startGame() {
+  document.querySelector("main")?.classList.add("hidden");
+  gameScreen.classList.remove("hidden");
+  gameMessage.textContent = "";
+
+  let elapsed = 0;
+  gameInterval = setInterval(() => {
+    cells.forEach(c => c.classList.remove("active"));
+    cells[activeIndex].classList.add("active");
+    activeIndex = (activeIndex + 1) % cells.length;
+    elapsed += 150;
+
+    if (elapsed >= 15000) {
+      clearInterval(gameInterval);
+      finishGame();
+    }
+  }, 150);
+}
+
+async function finishGame() {
+  // aqui simulamos win/lose (depois ligamos ao Supabase)
+  const win = Math.random() < 0.01; // 1 vencedor simbólico
+
+  if (win) {
+    gameMessage.textContent = "🎉 CONGRATULATIONS 🎉 YOU WIN 🛴";
+    confetti();
+  } else {
+    const msgs = [
+      "😈 Quase… mas o sistema não te escolheu.",
+      "🕳️ Sentiste que ia ser agora, não sentiste?",
+      "🎰 O casino agradece a tua esperança.",
+      "⌛ Continua atento. O erro foi acreditar."
+    ];
+    gameMessage.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  }
+}
+
+// ligar botão
+if (btnPlay) {
+  btnPlay.addEventListener("click", startGame);
+}
