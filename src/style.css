@@ -194,6 +194,7 @@ input:focus{border-color: rgba(255,255,255,.22)}
   transition: width 500ms ease, background 500ms ease;
 }
 
+/* --- GRID --- */
 .gridWrap{min-height:240px}
 .grid{
   position:relative;
@@ -210,13 +211,45 @@ input:focus{border-color: rgba(255,255,255,.22)}
   display:grid;
   place-items:center;
   font-weight:900;
-  opacity:.8;
-  transition: transform .08s ease, opacity .08s ease;
+  opacity:.85;
+  transition: transform .08s ease, opacity .08s ease, box-shadow .2s ease;
+  position:relative;
+  overflow:hidden;
 }
 .cell.hot{
   opacity:1;
   transform: scale(1.06);
   box-shadow: 0 0 22px rgba(255,255,255,.12);
+  outline: 2px solid rgba(255,255,255,.10);
+}
+
+/* "tampa" + "conteúdo" (abrir caixa) */
+.cell .lid{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  opacity:.45;
+  transform: translateY(0);
+  transition: transform 260ms ease, opacity 260ms ease;
+}
+.cell .core{
+  position:relative;
+  z-index:2;
+  display:grid;
+  place-items:center;
+  height:100%;
+  font-size:20px;
+  font-weight:900;
+  opacity:.95;
+}
+.cell.opened .lid{
+  transform: translateY(-110%);
+  opacity:0;
+}
+.cell.opened{
+  box-shadow: 0 0 30px rgba(255,220,120,.10);
 }
 
 .glow{ animation: glowPulse 1.2s ease-in-out infinite; }
@@ -241,39 +274,4 @@ input:focus{border-color: rgba(255,255,255,.22)}
   max-width:1100px; margin:14px auto 0;
   display:flex; gap:10px; align-items:center;
   color:var(--muted); font-size:12px;
-}
-.hidden { display: none; }
-
-.grid{
-  display:grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap:10px;
-  max-width:420px;
-  margin:30px auto;
-}
-
-.cell{
-  aspect-ratio:1;
-  border-radius:12px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.15);
-  transition:all .25s ease;
-}
-
-.cell.active{
-  background: radial-gradient(circle, #fff, #ffd54a, #ff9f1c);
-  box-shadow:0 0 25px rgba(255,200,50,.9);
-  transform:scale(1.1);
-}
-
-.gameMessage{
-  margin-top:25px;
-  font-size:20px;
-  font-weight:700;
-  text-align:center;
-}
-
-.glow{
-  text-align:center;
-  text-shadow:0 0 12px rgba(255,255,255,.6);
 }
