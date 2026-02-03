@@ -713,3 +713,39 @@ input:focus{border-color: rgba(255,255,255,.22)}
   .tv{ padding: 14px 14px 18px; border-radius: 18px; }
   .tvScreen{ height: 170px; }
 }
+/* ===== TOP AREA (TV em cima) ===== */
+.heroBoard{
+  width: 100%;
+  max-width: 1100px;
+  margin: 10px auto 0;
+  padding: 14px 16px 8px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
+  box-shadow: 0 18px 55px rgba(0,0,0,.45);
+}
+
+.heroTitle{
+  font-weight: 900;
+  letter-spacing: 1px;
+  font-size: 14px;
+  opacity: .85;
+  margin: 0 0 10px 2px;
+}
+
+/* TV ocupa bem no topo */
+.heroBoard .tv{
+  width: min(720px, 100%);
+}
+
+/* mobile: aperta para caber bonito */
+@media (max-width: 520px){
+  .heroBoard{
+    padding: 12px 12px 6px;
+    border-radius: 16px;
+  }
+  .heroTitle{
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+}

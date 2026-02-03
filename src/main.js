@@ -9,24 +9,85 @@ const SHOW_NUMBERS_IN_VAULT = false;
 const TV_RANGE = 100;          // números 1..100
 const TV_SPIN_MS = 15000;      // 15s
 
-// ---------------- AUDIO ----------------
+// ---------------- AUDIO (mais suave) ----------------
 let audioCtx = null;
 function audioOn() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-function beep(freq=220, dur=0.08, type="sine", gain=0.03){
+
+function envGain(g, t0, a=0.01, d=0.08){
+  // envelope simples
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(a, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+}
+
+function tone({freq=440, dur=0.08, type="sine", gain=0.03}={}){
   if (!audioCtx) return;
+  const t0 = audioCtx.currentTime;
   const o = audioCtx.createOscillator();
   const g = audioCtx.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.value = gain;
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  envGain(g, t0, gain, dur);
   o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime + dur);
+  o.start(t0);
+  o.stop(t0 + dur + 0.02);
 }
+
+function chime(){
+  // pequeno “casino chime” suave
+  tone({freq:523.25, dur:0.10, type:"sine", gain:0.025}); // C5
+  setTimeout(()=>tone({freq:659.25, dur:0.10, type:"sine", gain:0.020}), 90); // E5
+  setTimeout(()=>tone({freq:783.99, dur:0.12, type:"sine", gain:0.018}), 180); // G5
+}
+
+function softClick(){
+  tone({freq:220, dur:0.03, type:"triangle", gain:0.010});
+  tone({freq:440, dur:0.02, type:"sine", gain:0.006});
+}
+
+function softTick(i){
+  // tic discreto enquanto rola (não irritante)
+  const f = 220 + (i % 12) * 9;
+  tone({freq:f, dur:0.018, type:"triangle", gain:0.006});
+}
+
+function softHumOn(){
+  // hum contínuo durante a rotação (bem leve)
+  if (!audioCtx) return null;
+  const t0 = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(55, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.008, t0 + 0.15);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  return { o, g };
+}
+
+function softHumOff(h){
+  if (!audioCtx || !h) return;
+  const t0 = audioCtx.currentTime;
+  h.g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+  h.o.stop(t0 + 0.2);
+}
+
 const SFX = {
-  click(){ beep(520,0.03,"square",0.02); },
-  hum(){ beep(55,0.22,"sine",0.01); },
-  ok(){ beep(330,0.06,"sine",0.05); setTimeout(()=>beep(660,0.06,"sine",0.04),70); },
-  bad(){ beep(140,0.11,"sawtooth",0.03); },
-  tick(i){ beep(220 + (i%10)*14, 0.02, "square", 0.012); }
+  click(){ softClick(); },
+  start(){ chime(); },
+  tick(i){ softTick(i); },
+  ok(){
+    // vitória: mais doce
+    tone({freq:523.25, dur:0.10, type:"sine", gain:0.03});
+    setTimeout(()=>tone({freq:659.25, dur:0.10, type:"sine", gain:0.025}), 110);
+    setTimeout(()=>tone({freq:783.99, dur:0.12, type:"sine", gain:0.022}), 220);
+  },
+  bad(){
+    // derrota: grave, mas suave
+    tone({freq:130.81, dur:0.18, type:"sine", gain:0.02});
+    setTimeout(()=>tone({freq:98, dur:0.20, type:"sine", gain:0.018}), 160);
+  }
 };
 
 // ---------------- i18n ----------------
@@ -45,7 +106,6 @@ const I18N = {
     okAdded:"✅ Nova entrada adicionada à tua pasta.",
     battery:{a:"⟡ O sistema está a acordar…", b:"⟡ A bateria está a encher…", c:"⟡ O sistema está quase pronto.", d:"⚠️ Falta muito pouco para o jogo começar.", e:"✅ O jogo está pronto."},
     playIntro:"15 segundos. Não pestanejes.",
-    gridTitle:"O TABULEIRO",
     tvTitle:"O ECRÃ",
     loseTitle:"🫠 NÃO FOI HOJE.",
     loseMsgs:[
@@ -88,7 +148,6 @@ const I18N = {
     okAdded:"✅ A new entry was added to your folder.",
     battery:{a:"⟡ The system is waking up…", b:"⟡ The battery is filling…", c:"⟡ The system is almost ready.", d:"⚠️ Very soon. The game will begin.", e:"✅ The game is ready."},
     playIntro:"15 seconds. Don’t blink.",
-    gridTitle:"THE GRID",
     tvTitle:"THE SCREEN",
     loseTitle:"🫠 NOT TODAY.",
     loseMsgs:[
@@ -131,7 +190,6 @@ const I18N = {
     okAdded:"✅ Nouvelle entrée ajoutée.",
     battery:{a:"⟡ Le système se réveille…", b:"⟡ La batterie se remplit…", c:"⟡ Presque prêt.", d:"⚠️ Très bientôt.", e:"✅ Le jeu est prêt."},
     playIntro:"15 secondes. Ne cligne pas des yeux.",
-    gridTitle:"LA GRILLE",
     tvTitle:"L’ÉCRAN",
     loseTitle:"🫠 PAS AUJOURD’HUI.",
     loseMsgs:[
@@ -174,7 +232,6 @@ const I18N = {
     okAdded:"✅ Neuer Eintrag hinzugefügt.",
     battery:{a:"⟡ Das System wacht auf…", b:"⟡ Die Batterie füllt sich…", c:"⟡ Fast bereit.", d:"⚠️ Gleich geht’s los.", e:"✅ Spiel bereit."},
     playIntro:"15 Sekunden. Nicht blinzeln.",
-    gridTitle:"DAS FELD",
     tvTitle:"DER BILDSCHIRM",
     loseTitle:"🫠 NICHT HEUTE.",
     loseMsgs:[
@@ -278,7 +335,6 @@ async function refreshStats(){
   }
   if (txt) txt.textContent = batteryText(r);
 
-  // play button: precisa do jogo pronto + tentativas restantes > 0
   const playBtn = document.querySelector("#btnPlay");
   if (playBtn){
     const ready = (state.stats.is_open === false) || (occ >= cap);
@@ -317,6 +373,28 @@ function render(){
       </div>
     </header>
 
+    ${
+      state.view === "play"
+      ? `
+        <section class="heroBoard">
+          <div class="heroTitle">🎰 ${t.playIntro}</div>
+          <div class="tv">
+            <div class="tvBezel"></div>
+            <div class="tvScreen">
+              <div class="tvNoise"></div>
+              <div class="tvNumber" id="tvNumber">—</div>
+              <div class="tvHint" id="tvHint">1 — 100</div>
+            </div>
+          </div>
+        </section>
+      `
+      : `
+        <section class="heroBoard">
+          <div class="heroTitle">⟡</div>
+        </section>
+      `
+    }
+
     <main class="main">
       <section class="panel">
         <div class="batteryBox">
@@ -346,6 +424,8 @@ function render(){
         <button class="enter winClose" id="winCloseBtn">OK</button>
       </div>
     </div>
+
+    <div id="confetti"></div>
   </div>`;
 
   app.querySelectorAll("button[data-lang]").forEach(b=>{
@@ -438,6 +518,7 @@ function viewHtml(){
       <button class="enter ghost" id="backVault">${t.back}</button>
 
       <div class="result" id="playStatus">…</div>
+      <div class="result" id="gameMsg"></div>
     </div>`;
   }
 
@@ -445,36 +526,24 @@ function viewHtml(){
 }
 
 function sideHtml(){
-  const t=T();
-  if (state.view!=="play"){
+  // em play não precisamos de nada grande à direita
+  if (state.view !== "play"){
     return `<div class="slot">
       <div class="slotTitle">SIGNAL</div>
       <div class="slotBody">
         <div class="pulse"></div>
-        <div class="whisper">${t.battery.b}</div>
+        <div class="whisper">${T().battery.b}</div>
       </div>
     </div>`;
   }
 
-  // ✅ TV / Monitor no lugar do grid
   return `<div class="slot">
-    <div class="slotTitle">${t.tvTitle}</div>
-    <div class="slotBody tvWrap">
+    <div class="slotTitle">SIGNAL</div>
+    <div class="slotBody">
       <div class="pulse"></div>
-
-      <div class="tv">
-        <div class="tvBezel"></div>
-        <div class="tvScreen">
-          <div class="tvNoise"></div>
-          <div class="tvNumber" id="tvNumber">—</div>
-          <div class="tvHint" id="tvHint">1 — 100</div>
-        </div>
-      </div>
-
+      <div class="whisper">⟡</div>
     </div>
-  </div>
-  <div class="result" id="gameMsg"></div>
-  <div id="confetti"></div>`;
+  </div>`;
 }
 
 function bind(){
@@ -528,7 +597,7 @@ function bind(){
 // ---------------- Actions ----------------
 async function onRegister(ev){
   ev.preventDefault();
-  const t=T(); audioOn(); SFX.click(); SFX.hum();
+  const t=T(); audioOn(); SFX.click();
 
   const out=document.querySelector("#rOut");
   out.className="result"; out.textContent="…";
@@ -561,7 +630,7 @@ async function onRegister(ev){
 
 async function onLogin(ev){
   ev.preventDefault();
-  const t=T(); audioOn(); SFX.click(); SFX.hum();
+  const t=T(); audioOn(); SFX.click();
 
   const out=document.querySelector("#lOut");
   out.className="result"; out.textContent="…";
@@ -590,7 +659,7 @@ async function onLogin(ev){
 
 async function onAdd(ev){
   ev.preventDefault();
-  const t=T(); audioOn(); SFX.click(); SFX.hum();
+  const t=T(); audioOn(); SFX.click();
 
   const out=document.querySelector("#vOut");
   out.className="result"; out.textContent="…";
@@ -627,7 +696,7 @@ async function loadMyEntries(){
   }
 }
 
-// ---------------- GAME (TV) ----------------
+// ---------------- GAME (TV em cima) ----------------
 let PLAYING=false;
 
 function confettiBoom(){
@@ -656,7 +725,7 @@ async function startPlay(){
   PLAYING=true;
   hideOverlay();
 
-  const t=T(); audioOn(); SFX.click(); SFX.hum();
+  const t=T(); audioOn(); SFX.start();
 
   const msg=document.querySelector("#gameMsg");
   const status=document.querySelector("#playStatus");
@@ -684,7 +753,6 @@ async function startPlay(){
     return;
   }
 
-  // consumir UMA tentativa no backend (anti-refresh)
   const { data, error } = await supabase.rpc("consume_play", {
     p_telegram: state.telegram,
     p_password: state.password
@@ -702,31 +770,33 @@ async function startPlay(){
   state.remaining = Number(data.remaining ?? state.remaining);
   await refreshStats();
 
-  // alvo final 1..100
   const target = win
     ? ((usedEntry * 37) % TV_RANGE) + 1
     : ((usedEntry - 1) % TV_RANGE) + 1;
 
-  // reset TV
-  setTvNumber("—", false);
+  // hum durante rotação
+  const hum = softHumOn();
 
   const start = performance.now();
   let last = 1;
+  let tickCount = 0;
 
   const tick = () => {
     const now = performance.now();
     const elapsed = now - start;
 
-    // número aleatório (evita repetir demasiado)
     let n = last;
     while (n === last) n = 1 + Math.floor(Math.random() * TV_RANGE);
     last = n;
 
     setTvNumber(n, true);
-    SFX.tick(n);
+
+    // não faz tick a 60fps para não ficar irritante
+    if ((tickCount++ % 2) === 0) SFX.tick(n);
 
     if (elapsed >= TV_SPIN_MS){
-      // parar
+      softHumOff(hum);
+
       setTvNumber(target, false);
 
       if (win){
