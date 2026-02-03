@@ -6,9 +6,8 @@ const SUPABASE_ANON_KEY = "sb_publishable_E78syLF-N2LWCvaz8shXRg_wr8vWFyi";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHOW_NUMBERS_IN_VAULT = false;
-
-// ✅ AQUI: número de cofres no tabuleiro
-const GRID_CELLS = 100;
+const TV_RANGE = 100;          // números 1..100
+const TV_SPIN_MS = 15000;      // 15s
 
 // ---------------- AUDIO ----------------
 let audioCtx = null;
@@ -27,7 +26,7 @@ const SFX = {
   hum(){ beep(55,0.22,"sine",0.01); },
   ok(){ beep(330,0.06,"sine",0.05); setTimeout(()=>beep(660,0.06,"sine",0.04),70); },
   bad(){ beep(140,0.11,"sawtooth",0.03); },
-  tick(i){ beep(200 + (i%8)*18, 0.02, "square", 0.012); }
+  tick(i){ beep(220 + (i%10)*14, 0.02, "square", 0.012); }
 };
 
 // ---------------- i18n ----------------
@@ -47,6 +46,7 @@ const I18N = {
     battery:{a:"⟡ O sistema está a acordar…", b:"⟡ A bateria está a encher…", c:"⟡ O sistema está quase pronto.", d:"⚠️ Falta muito pouco para o jogo começar.", e:"✅ O jogo está pronto."},
     playIntro:"15 segundos. Não pestanejes.",
     gridTitle:"O TABULEIRO",
+    tvTitle:"O ECRÃ",
     loseTitle:"🫠 NÃO FOI HOJE.",
     loseMsgs:[
       "😐 Estiveste perto. O sistema não vai admitir.",
@@ -89,6 +89,7 @@ const I18N = {
     battery:{a:"⟡ The system is waking up…", b:"⟡ The battery is filling…", c:"⟡ The system is almost ready.", d:"⚠️ Very soon. The game will begin.", e:"✅ The game is ready."},
     playIntro:"15 seconds. Don’t blink.",
     gridTitle:"THE GRID",
+    tvTitle:"THE SCREEN",
     loseTitle:"🫠 NOT TODAY.",
     loseMsgs:[
       "😐 You were close. The system won’t admit it.",
@@ -131,6 +132,7 @@ const I18N = {
     battery:{a:"⟡ Le système se réveille…", b:"⟡ La batterie se remplit…", c:"⟡ Presque prêt.", d:"⚠️ Très bientôt.", e:"✅ Le jeu est prêt."},
     playIntro:"15 secondes. Ne cligne pas des yeux.",
     gridTitle:"LA GRILLE",
+    tvTitle:"L’ÉCRAN",
     loseTitle:"🫠 PAS AUJOURD’HUI.",
     loseMsgs:[
       "😐 Tu étais proche. Le système ne l’avouera pas.",
@@ -173,6 +175,7 @@ const I18N = {
     battery:{a:"⟡ Das System wacht auf…", b:"⟡ Die Batterie füllt sich…", c:"⟡ Fast bereit.", d:"⚠️ Gleich geht’s los.", e:"✅ Spiel bereit."},
     playIntro:"15 Sekunden. Nicht blinzeln.",
     gridTitle:"DAS FELD",
+    tvTitle:"DER BILDSCHIRM",
     loseTitle:"🫠 NICHT HEUTE.",
     loseMsgs:[
       "😐 Du warst nah dran. Das System sagt es nicht.",
@@ -351,7 +354,6 @@ function render(){
 
   bind();
   refreshStats();
-  if (state.view==="play") buildGrid();
 }
 
 function viewHtml(){
@@ -454,11 +456,21 @@ function sideHtml(){
     </div>`;
   }
 
+  // ✅ TV / Monitor no lugar do grid
   return `<div class="slot">
-    <div class="slotTitle">${t.gridTitle}</div>
-    <div class="slotBody gridWrap">
+    <div class="slotTitle">${t.tvTitle}</div>
+    <div class="slotBody tvWrap">
       <div class="pulse"></div>
-      <div class="grid" id="grid"></div>
+
+      <div class="tv">
+        <div class="tvBezel"></div>
+        <div class="tvScreen">
+          <div class="tvNoise"></div>
+          <div class="tvNumber" id="tvNumber">—</div>
+          <div class="tvHint" id="tvHint">1 — 100</div>
+        </div>
+      </div>
+
     </div>
   </div>
   <div class="result" id="gameMsg"></div>
@@ -615,40 +627,8 @@ async function loadMyEntries(){
   }
 }
 
-// ---------------- GAME ----------------
+// ---------------- GAME (TV) ----------------
 let PLAYING=false;
-
-function buildGrid(){
-  const grid=document.querySelector("#grid");
-  if (!grid) return;
-  grid.innerHTML="";
-
-  // ✅ AQUI: cria 100 células
-  for (let i=0;i<GRID_CELLS;i++){
-    const d=document.createElement("div");
-    d.className="cell";
-    // lid = parte decorativa (rebites/charneira via CSS)
-    // core = conteúdo do cofre (só aparece ao abrir)
-    d.innerHTML=`<div class="lid">⟡</div><div class="core">◻</div>`;
-    grid.appendChild(d);
-  }
-}
-
-function setHot(idx){
-  const grid=document.querySelector("#grid");
-  if (!grid) return;
-  [...grid.children].forEach((c,i)=> c.classList.toggle("hot", i===idx));
-}
-
-function openCell(idx, win){
-  const grid=document.querySelector("#grid");
-  if (!grid) return;
-  const cell=grid.children[idx];
-  if (!cell) return;
-  cell.classList.add("opened");
-  const core=cell.querySelector(".core");
-  if (core) core.textContent = win ? "🛴" : "🕳️";
-}
 
 function confettiBoom(){
   const box=document.querySelector("#confetti");
@@ -662,6 +642,13 @@ function confettiBoom(){
     c.style.transform = `rotate(${Math.random()*360}deg)`;
     box.appendChild(c);
   }
+}
+
+function setTvNumber(n, hot=false){
+  const el = document.querySelector("#tvNumber");
+  if (!el) return;
+  el.textContent = String(n);
+  el.classList.toggle("hot", !!hot);
 }
 
 async function startPlay(){
@@ -715,66 +702,57 @@ async function startPlay(){
   state.remaining = Number(data.remaining ?? state.remaining);
   await refreshStats();
 
-  buildGrid();
-
-  const cells = GRID_CELLS;
-
-  // ✅ Alvo final em 100:
-  // - se perder: determinístico com base no bilhete (parece “coerente”)
-  // - se ganhar: determinístico também (para não parecer random fake)
+  // alvo final 1..100
   const target = win
-    ? ((usedEntry * 37) % cells)
-    : ((usedEntry - 1) % cells);
+    ? ((usedEntry * 37) % TV_RANGE) + 1
+    : ((usedEntry - 1) % TV_RANGE) + 1;
 
-  // animação 15s
-  const totalMs=15000;
-  const stepMs=70; // mais rápido porque agora são 100
-  let idx=0, dir=1, elapsed=0;
+  // reset TV
+  setTvNumber("—", false);
 
-  const timer=setInterval(()=>{
-    elapsed += stepMs;
+  const start = performance.now();
+  let last = 1;
 
-    setHot(idx);
-    SFX.tick(idx);
+  const tick = () => {
+    const now = performance.now();
+    const elapsed = now - start;
 
-    idx += dir;
+    // número aleatório (evita repetir demasiado)
+    let n = last;
+    while (n === last) n = 1 + Math.floor(Math.random() * TV_RANGE);
+    last = n;
 
-    // vai e volta (pêndulo)
-    if (idx >= cells-1){ dir=-1; idx=cells-1; }
-    if (idx <= 0){ dir=1; idx=0; }
+    setTvNumber(n, true);
+    SFX.tick(n);
 
-    // caos controlado
-    if (Math.random() < 0.05) dir *= -1;
-
-    if (elapsed >= totalMs){
-      clearInterval(timer);
-
-      setHot(target);
-      openCell(target, win);
+    if (elapsed >= TV_SPIN_MS){
+      // parar
+      setTvNumber(target, false);
 
       if (win){
         SFX.ok();
         confettiBoom();
-
         showOverlay({ mode:"win", icon:"🛴", title:t.winTitle, subtitle:t.winMsg });
 
-        if (msg){ msg.className="result ok glow"; msg.textContent=`${t.winTitle}\n${t.winMsg}`; }
+        if (msg){ msg.className="result ok glow"; msg.textContent=`${t.winTitle}\n${t.winMsg}\n\n#${target}`; }
         if (status){ status.className="result ok"; status.textContent="✅"; }
       } else {
         SFX.bad();
-
         const sub = pick(t.loseMsgs);
-        const text = `${t.loseTitle}\n${sub}`;
-
         showOverlay({ mode:"lose", icon:"🕳️", title:t.loseTitle, subtitle: sub });
 
-        if (msg){ msg.className="result bad glow"; msg.textContent=text; }
+        if (msg){ msg.className="result bad glow"; msg.textContent=`${t.loseTitle}\n${sub}\n\n#${target}`; }
         if (status){ status.className="result bad"; status.textContent="…"; }
       }
 
       PLAYING=false;
+      return;
     }
-  }, stepMs);
+
+    requestAnimationFrame(tick);
+  };
+
+  requestAnimationFrame(tick);
 }
 
 render();
